@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 
 class ConnectorAuth(BaseModel):
-    type: str  # api_key, oauth2, basic
+    type: str
     credentials: dict = Field(default_factory=dict)
     config: dict = Field(default_factory=dict)
 
@@ -18,7 +18,7 @@ class ConnectorResponse(BaseModel):
 
 
 class ConnectorBase(ABC):
-    """Base class for all JARVIS connectors."""
+    """V1 connector base class - used by existing connectors (Odoo, Notion, etc.)."""
 
     def __init__(self, config: dict = None, auth: ConnectorAuth = None):
         self.config = config or {}
@@ -27,22 +27,18 @@ class ConnectorBase(ABC):
 
     @abstractmethod
     async def initialize(self) -> bool:
-        """Initialize the connector with authentication."""
         ...
 
     @abstractmethod
     async def execute(self, action: str, params: dict) -> ConnectorResponse:
-        """Execute a connector action."""
         ...
 
     @abstractmethod
     async def health_check(self) -> bool:
-        """Check if the connector is operational."""
         ...
 
     @abstractmethod
     async def close(self) -> None:
-        """Clean up connector resources."""
         ...
 
     async def __aenter__(self):

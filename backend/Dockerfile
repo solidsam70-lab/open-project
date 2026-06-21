@@ -10,8 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
-
+COPY . /app/
 ENV PYTHONPATH=/app
 ENV JARVIS_ENV=production
 ENV JARVIS_DATABASE_URL=postgresql+asyncpg://jarvis:jarvis@postgres:5432/jarvis
