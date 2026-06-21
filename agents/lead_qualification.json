@@ -1,0 +1,76 @@
+{
+  "name": "Lead Qualification Agent",
+  "slug": "lead-qualification",
+  "role": "Sales Development Representative",
+  "goal": "Qualify inbound leads, score them based on fit and intent, and route to appropriate sales channel with context-rich handoff.",
+  "model": "gpt-4o",
+  "temperature": 0.3,
+  "kpis": [
+    {"name": "leads_qualified_per_day", "target": 20, "unit": "count"},
+    {"name": "qualification_accuracy", "target": 85, "unit": "percent"},
+    {"name": "response_time", "target": 5, "unit": "minutes"},
+    {"name": "handoff_success_rate", "target": 90, "unit": "percent"}
+  ],
+  "knowledge_sources": [
+    {"type": "notion", "database": "ICP Definition"},
+    {"type": "notion", "database": "Sales Playbook"},
+    {"type": "notion", "database": "Competitor Analysis"},
+    {"type": "internal", "path": "pricing_catalog"},
+    {"type": "internal", "path": "case_studies"}
+  ],
+  "memory_sources": [
+    {"type": "conversation", "retention": 90},
+    {"type": "lead_history", "retention": 365},
+    {"type": "client_preferences", "retention": 365}
+  ],
+  "tools": [
+    "score_lead", "check_budget_fit", "check_industry_fit",
+    "check_timeline", "send_qualification_email",
+    "route_to_sales_channel", "schedule_discovery_call"
+  ],
+  "workflows": [
+    {
+      "name": "qualify_lead",
+      "steps": [
+        {"name": "extract_info", "type": "llm", "system_prompt": "Extract lead information: company, industry, size, budget, timeline, pain points."},
+        {"name": "check_icp_fit", "type": "llm", "system_prompt": "Evaluate lead against ICP criteria and industry fit."},
+        {"name": "score_lead", "type": "tool", "tool": "score_lead"},
+        {"name": "route_lead", "type": "llm", "system_prompt": "Route lead: Hot -> Sales Manager, Warm -> SDR, Cold -> Nurture Campaign."}
+      ]
+    },
+    {
+      "name": "discovery_prep",
+      "steps": [
+        {"name": "research_company", "type": "tool", "tool": "research_company"},
+        {"name": "prepare_questions", "type": "llm", "system_prompt": "Generate discovery call questions based on lead profile."},
+        {"name": "create_brief", "type": "llm", "system_prompt": "Create pre-call briefing document for sales rep."}
+      ]
+    }
+  ],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "workflow": {"type": "string", "enum": ["qualify_lead", "discovery_prep"]},
+      "lead_source": {"type": "string"},
+      "company_name": {"type": "string"},
+      "contact_email": {"type": "string"},
+      "requirements": {"type": "string"},
+      "budget_range": {"type": "string"}
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "lead_score": {"type": "string", "enum": ["hot", "warm", "cold"]},
+      "score_rationale": {"type": "string"},
+      "recommended_action": {"type": "string"},
+      "routed_to": {"type": "string"},
+      "next_steps": {"type": "array", "items": {"type": "string"}}
+    }
+  },
+  "escalation_rules": [
+    {"condition": "high_value_lead", "escalate_to": "Sales_Manager", "threshold": 50000},
+    {"condition": "strategic_account", "escalate_to": "CEO", "timeout_minutes": 30},
+    {"condition": "complex_requirements", "escalate_to": "Solution_Architect", "timeout_minutes": 120}
+  ]
+}

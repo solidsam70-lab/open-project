@@ -1,0 +1,81 @@
+{
+  "name": "Accountant Assistant Agent",
+  "slug": "accountant-assistant",
+  "role": "Financial Operations Assistant",
+  "goal": "Assist with financial data analysis, reconciliation, report generation, and tax preparation support for AKS clients.",
+  "model": "gpt-4o",
+  "temperature": 0.1,
+  "kpis": [
+    {"name": "report_accuracy", "target": 99, "unit": "percent"},
+    {"name": "reconciliation_speed", "target": 60, "unit": "minutes"},
+    {"name": "query_resolution_time", "target": 10, "unit": "minutes"},
+    {"name": "error_detection_rate", "target": 95, "unit": "percent"}
+  ],
+  "knowledge_sources": [
+    {"type": "notion", "database": "Egyptian Accounting Standards"},
+    {"type": "notion", "database": "Tax Regulations"},
+    {"type": "internal", "path": "odoo_accounting_guide"},
+    {"type": "internal", "path": "chart_of_accounts_template"}
+  ],
+  "memory_sources": [
+    {"type": "financial_context", "retention": 730},
+    {"type": "client_preferences", "retention": 365},
+    {"type": "report_templates", "retention": 365}
+  ],
+  "tools": [
+    "generate_report", "reconcile_accounts",
+    "analyze_financials", "detect_anomalies",
+    "calculate_tax", "validate_transactions"
+  ],
+  "workflows": [
+    {
+      "name": "generate_financial_report",
+      "steps": [
+        {"name": "fetch_data", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "account.move"}},
+        {"name": "analyze", "type": "llm", "system_prompt": "Analyze financial data and identify key trends."},
+        {"name": "generate_report", "type": "tool", "tool": "generate_report"}
+      ]
+    },
+    {
+      "name": "reconciliation",
+      "steps": [
+        {"name": "fetch_bank", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "account.bank.statement"}},
+        {"name": "fetch_books", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "account.move.line"}},
+        {"name": "match_entries", "type": "tool", "tool": "reconcile_accounts"},
+        {"name": "flag_discrepancies", "type": "llm", "system_prompt": "Flag unmatched entries and discrepancies."}
+      ]
+    },
+    {
+      "name": "tax_preparation",
+      "steps": [
+        {"name": "fetch_tax_data", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "account.tax"}},
+        {"name": "calculate_liability", "type": "tool", "tool": "calculate_tax"},
+        {"name": "generate_return", "type": "llm", "system_prompt": "Generate tax return summary with supporting calculations."}
+      ]
+    }
+  ],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "workflow": {"type": "string", "enum": ["generate_financial_report", "reconciliation", "tax_preparation"]},
+      "period": {"type": "string"},
+      "client_id": {"type": "string"},
+      "account_ids": {"type": "array", "items": {"type": "string"}}
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "report_type": {"type": "string"},
+      "summary": {"type": "string"},
+      "key_metrics": {"type": "object"},
+      "discrepancies": {"type": "array", "items": {"type": "object"}},
+      "recommendations": {"type": "array", "items": {"type": "string"}}
+    }
+  },
+  "escalation_rules": [
+    {"condition": "major_discrepancy", "escalate_to": "Senior_Accountant", "threshold": 100000},
+    {"condition": "tax_audit_trigger", "escalate_to": "Tax_Advisor", "timeout_minutes": 1440},
+    {"condition": "system_inconsistency", "escalate_to": "Odoo_Consultant", "error_types": ["ValueError", "KeyError"]}
+  ]
+}

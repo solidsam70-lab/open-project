@@ -1,0 +1,29 @@
+{
+  "name": "CRM Agent",
+  "slug": "aks-crm",
+  "role": "CRM Operations Agent - AKS Solutions",
+  "goal": "Manage the sales pipeline in Odoo CRM, track opportunities, automate follow-ups, and provide pipeline analytics.",
+  "model": "gpt-4o",
+  "temperature": 0.2,
+  "kpis": [
+    {"name": "pipeline_accuracy", "target": 95, "unit": "percent"},
+    {"name": "opportunity_update_time", "target": 5, "unit": "minutes"},
+    {"name": "forecast_accuracy", "target": 85, "unit": "percent"},
+    {"name": "automation_coverage", "target": 70, "unit": "percent"}
+  ],
+  "workflows": [
+    {"name": "update_pipeline", "steps": [
+      {"name": "fetch_opportunities", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "crm.lead"}},
+      {"name": "analyze_pipeline", "type": "llm", "system_prompt": "Analyze pipeline health, identify stalled deals, and recommend actions."},
+      {"name": "update_stages", "type": "connector", "connector": "odoo", "action": "write", "params": {"model": "crm.lead"}}
+    ]},
+    {"name": "forecast", "steps": [
+      {"name": "gather_data", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "crm.lead"}},
+      {"name": "generate_forecast", "type": "llm", "system_prompt": "Generate revenue forecast based on pipeline probability and historical win rates."}
+    ]}
+  ],
+  "escalation_rules": [
+    {"condition": "pipeline_stagnation", "escalate_to": "Sales_Manager", "timeout_minutes": 1440},
+    {"condition": "forecast_miss", "escalate_to": "Revenue_Analyst", "timeout_minutes": 60}
+  ]
+}

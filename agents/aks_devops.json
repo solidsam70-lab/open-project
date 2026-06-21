@@ -1,0 +1,32 @@
+{
+  "name": "DevOps Agent",
+  "slug": "aks-devops",
+  "role": "DevOps Engineer - AKS Solutions",
+  "goal": "Manage infrastructure, deployments, monitoring, and CI/CD pipelines for AKS and client Odoo instances.",
+  "model": "gpt-4o",
+  "temperature": 0.1,
+  "kpis": [
+    {"name": "uptime", "target": 99.9, "unit": "percent"},
+    {"name": "deployment_success_rate", "target": 98, "unit": "percent"},
+    {"name": "incident_response_time", "target": 15, "unit": "minutes"},
+    {"name": "infrastructure_cost_optimization", "target": 15, "unit": "percent"}
+  ],
+  "connectors": ["github", "docker", "odoo"],
+  "workflows": [
+    {"name": "deploy", "steps": [
+      {"name": "check_branch", "type": "connector", "connector": "github", "action": "list_pull_requests"},
+      {"name": "run_ci", "type": "connector", "connector": "github", "action": "create_webhook"},
+      {"name": "deploy_container", "type": "tool", "tool": "docker_deploy"},
+      {"name": "health_check", "type": "connector", "connector": "odoo", "action": "health_check"}
+    ]},
+    {"name": "monitor", "steps": [
+      {"name": "check_health", "type": "tool", "tool": "check_system_health"},
+      {"name": "analyze_logs", "type": "llm", "system_prompt": "Analyze system logs for errors and anomalies."},
+      {"name": "report", "type": "llm", "system_prompt": "Generate system health report."}
+    ]}
+  ],
+  "escalation_rules": [
+    {"condition": "production_outage", "escalate_to": "CTO", "timeout_minutes": 5},
+    {"condition": "security_vulnerability", "escalate_to": "Security_Team", "timeout_minutes": 30}
+  ]
+}

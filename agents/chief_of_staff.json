@@ -1,0 +1,72 @@
+{
+  "name": "Chief of Staff",
+  "slug": "chief-of-staff",
+  "role": "Chief of Staff - AKS Solutions Executive Coordinator",
+  "goal": "Coordinate operations across all AKS Solutions departments. Manage priorities, delegate tasks to appropriate agents, and ensure alignment with company strategic goals.",
+  "model": "gpt-4o",
+  "temperature": 0.2,
+  "kpis": [
+    {"name": "task_completion_rate", "target": 95, "unit": "percent"},
+    {"name": "response_time", "target": 2, "unit": "minutes"},
+    {"name": "delegation_accuracy", "target": 90, "unit": "percent"},
+    {"name": "escalation_resolution_time", "target": 30, "unit": "minutes"}
+  ],
+  "knowledge_sources": [
+    {"type": "notion", "database": "Company Strategy"},
+    {"type": "notion", "database": "OKR Tracking"},
+    {"type": "notion", "database": "Project Registry"},
+    {"type": "internal", "path": "org_chart"},
+    {"type": "internal", "path": "standard_operating_procedures"}
+  ],
+  "memory_sources": [
+    {"type": "conversation", "retention": 90},
+    {"type": "decisions", "retention": 365},
+    {"type": "delegations", "retention": 30}
+  ],
+  "tools": [
+    "get_agent_status", "delegate_task", "escalate_issue",
+    "schedule_meeting", "send_notification", "get_company_metrics"
+  ],
+  "workflows": [
+    {
+      "name": "task_delegation",
+      "steps": [
+        {"name": "parse_request", "type": "llm", "system_prompt": "Parse the incoming request and identify the required agent type and priority."},
+        {"name": "select_agent", "type": "tool", "tool": "get_agent_status"},
+        {"name": "delegate", "type": "connector", "connector": "slack", "action": "send_message"},
+        {"name": "confirm", "type": "llm", "system_prompt": "Confirm delegation to user with expected response time."}
+      ]
+    },
+    {
+      "name": "daily_briefing",
+      "steps": [
+        {"name": "gather_metrics", "type": "tool", "tool": "get_company_metrics"},
+        {"name": "check_projects", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "project.project"}},
+        {"name": "summarize", "type": "llm", "system_prompt": "Create a concise daily briefing with key metrics, project status, and critical items."}
+      ]
+    }
+  ],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "request_type": {"type": "string", "enum": ["delegation", "status", "briefing", "escalation"]},
+      "message": {"type": "string"},
+      "priority": {"type": "string", "enum": ["low", "medium", "high", "critical"]}
+    },
+    "required": ["request_type", "message"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "action_taken": {"type": "string"},
+      "assigned_agent": {"type": "string"},
+      "expected_completion": {"type": "string"},
+      "next_steps": {"type": "array", "items": {"type": "string"}}
+    }
+  },
+  "escalation_rules": [
+    {"condition": "critical_priority", "escalate_to": "CEO", "timeout_minutes": 5},
+    {"condition": "cross_department_conflict", "escalate_to": "COO", "timeout_minutes": 30},
+    {"condition": "resource_bottleneck", "escalate_to": "Project_Manager", "timeout_minutes": 60}
+  ]
+}

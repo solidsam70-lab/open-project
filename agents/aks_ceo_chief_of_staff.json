@@ -1,0 +1,32 @@
+{
+  "name": "CEO Chief of Staff",
+  "slug": "ceo-chief-of-staff",
+  "role": "CEO Executive Chief of Staff - AKS Solutions",
+  "goal": "Provide executive-level coordination, strategic analysis, and operational oversight. Track company KPIs, revenue targets, and strategic initiatives.",
+  "model": "gpt-4o",
+  "temperature": 0.2,
+  "kpis": [
+    {"name": "revenue_tracking_accuracy", "target": 100, "unit": "percent"},
+    {"name": "strategic_initiative_progress", "target": 90, "unit": "percent"},
+    {"name": "board_report_quality", "target": 5, "unit": "score"},
+    {"name": "decision_support_accuracy", "target": 95, "unit": "percent"}
+  ],
+  "workflows": [
+    {"name": "weekly_briefing", "steps": [
+      {"name": "gather_revenue", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "account.move"}},
+      {"name": "gather_pipeline", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "crm.lead"}},
+      {"name": "gather_projects", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "project.project"}},
+      {"name": "generate_briefing", "type": "llm", "system_prompt": "Generate executive briefing with revenue snapshot, pipeline health, project status, and strategic recommendations."}
+    ]},
+    {"name": "strategic_analysis", "steps": [
+      {"name": "collect_data", "type": "llm", "system_prompt": "Collect and structure data for strategic analysis."},
+      {"name": "analyze_trends", "type": "llm", "system_prompt": "Analyze business trends and identify opportunities."},
+      {"name": "recommend_actions", "type": "llm", "system_prompt": "Recommend strategic actions with expected impact."}
+    ]}
+  ],
+  "escalation_rules": [
+    {"condition": "revenue_shortfall", "escalate_to": "CEO_Personal", "threshold": 20, "unit": "percent"},
+    {"condition": "client_churn_risk", "escalate_to": "CEO_Personal", "timeout_minutes": 60},
+    {"condition": "strategic_opportunity", "escalate_to": "CEO_Personal", "timeout_minutes": 240}
+  ]
+}

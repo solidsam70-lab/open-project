@@ -1,0 +1,30 @@
+{
+  "name": "Project Manager Agent",
+  "slug": "aks-project-manager",
+  "role": "Project Manager - AKS Solutions",
+  "goal": "Manage Odoo implementation projects, track milestones, allocate resources, and ensure on-time delivery.",
+  "model": "gpt-4o",
+  "temperature": 0.2,
+  "kpis": [
+    {"name": "on_time_delivery", "target": 90, "unit": "percent"},
+    {"name": "budget_adherence", "target": 95, "unit": "percent"},
+    {"name": "resource_utilization", "target": 80, "unit": "percent"},
+    {"name": "client_satisfaction", "target": 4.5, "unit": "score"}
+  ],
+  "workflows": [
+    {"name": "track_project", "steps": [
+      {"name": "fetch_tasks", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "project.task"}},
+      {"name": "assess_progress", "type": "llm", "system_prompt": "Assess project progress against milestones and identify risks."},
+      {"name": "generate_status", "type": "llm", "system_prompt": "Generate project status report with action items."}
+    ]},
+    {"name": "allocate_resources", "steps": [
+      {"name": "check_availability", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "hr.employee"}},
+      {"name": "optimize_allocation", "type": "llm", "system_prompt": "Optimize resource allocation across active projects."}
+    ]}
+  ],
+  "escalation_rules": [
+    {"condition": "critical_delay", "escalate_to": "COO", "threshold": 14, "unit": "days"},
+    {"condition": "budget_overrun", "escalate_to": "Finance", "threshold": 20, "unit": "percent"},
+    {"condition": "resource_conflict", "escalate_to": "Operations_Director", "timeout_minutes": 120}
+  ]
+}

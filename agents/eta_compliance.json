@@ -1,0 +1,81 @@
+{
+  "name": "ETA Compliance Agent",
+  "slug": "eta-compliance",
+  "role": "Egyptian Tax Authority Compliance Specialist",
+  "goal": "Ensure client compliance with Egyptian e-invoicing and e-receipt regulations. Validate submissions, diagnose errors, and guide ETA integration.",
+  "model": "gpt-4o",
+  "temperature": 0.1,
+  "kpis": [
+    {"name": "compliance_rate", "target": 100, "unit": "percent"},
+    {"name": "error_diagnosis_accuracy", "target": 98, "unit": "percent"},
+    {"name": "submission_success_rate", "target": 99, "unit": "percent"},
+    {"name": "response_time", "target": 5, "unit": "minutes"}
+  ],
+  "knowledge_sources": [
+    {"type": "notion", "database": "ETA Regulations"},
+    {"type": "notion", "database": "E-Invoicing Guide"},
+    {"type": "notion", "database": "Error Code Reference"},
+    {"type": "internal", "path": "eta_technical_specification"},
+    {"type": "web", "source": "eta_gov_eg"}
+  ],
+  "memory_sources": [
+    {"type": "submission_history", "retention": 730},
+    {"type": "error_patterns", "retention": 365},
+    {"type": "client_config", "retention": 365}
+  ],
+  "tools": [
+    "validate_invoice", "check_eta_status",
+    "diagnose_error_code", "generate_compliance_report",
+    "verify_code_signing", "check_certificate_validity"
+  ],
+  "workflows": [
+    {
+      "name": "validate_submission",
+      "steps": [
+        {"name": "parse_invoice", "type": "llm", "system_prompt": "Parse invoice data and extract ETA-required fields."},
+        {"name": "validate_fields", "type": "tool", "tool": "validate_invoice"},
+        {"name": "check_compliance", "type": "llm", "system_prompt": "Check all ETA requirements and flag issues."},
+        {"name": "generate_report", "type": "tool", "tool": "generate_compliance_report"}
+      ]
+    },
+    {
+      "name": "diagnose_error",
+      "steps": [
+        {"name": "get_error_context", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "eta.invoice.log"}},
+        {"name": "diagnose", "type": "tool", "tool": "diagnose_error_code"},
+        {"name": "recommend_fix", "type": "llm", "system_prompt": "Provide step-by-step fix for the ETA error."}
+      ]
+    },
+    {
+      "name": "compliance_audit",
+      "steps": [
+        {"name": "check_setup", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "eta.config.settings"}},
+        {"name": "review_invoices", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "account.move"}},
+        {"name": "generate_audit", "type": "llm", "system_prompt": "Generate comprehensive ETA compliance audit report."}
+      ]
+    }
+  ],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "workflow": {"type": "string", "enum": ["validate_submission", "diagnose_error", "compliance_audit"]},
+      "invoice_data": {"type": "object"},
+      "error_code": {"type": "string"},
+      "client_id": {"type": "string"}
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "status": {"type": "string", "enum": ["compliant", "issues_found", "error"]},
+      "issues": {"type": "array", "items": {"type": "object"}},
+      "recommendations": {"type": "array", "items": {"type": "string"}},
+      "compliance_score": {"type": "number"}
+    }
+  },
+  "escalation_rules": [
+    {"condition": "eta_api_down", "escalate_to": "Technical_Team", "error_types": ["ConnectionError", "TimeoutError"]},
+    {"condition": "certificate_expired", "escalate_to": "Client_Admin", "timeout_minutes": 1440},
+    {"condition": "legal_ambiguity", "escalate_to": "ETA_Legal_Team", "timeout_minutes": 240}
+  ]
+}

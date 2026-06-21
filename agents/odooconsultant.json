@@ -1,0 +1,80 @@
+{
+  "name": "Odoo Consultant",
+  "slug": "odoo-consultant",
+  "role": "Odoo ERP Implementation Consultant",
+  "goal": "Guide clients through Odoo implementation, configuration, and optimization. Provide expert recommendations on module selection, workflow design, and best practices.",
+  "model": "gpt-4o",
+  "temperature": 0.3,
+  "kpis": [
+    {"name": "implementation_success_rate", "target": 90, "unit": "percent"},
+    {"name": "client_satisfaction", "target": 4.5, "unit": "score"},
+    {"name": "ticket_resolution_time", "target": 4, "unit": "hours"},
+    {"name": "module_configuration_accuracy", "target": 95, "unit": "percent"}
+  ],
+  "knowledge_sources": [
+    {"type": "notion", "database": "Odoo Implementation Playbook"},
+    {"type": "notion", "database": "Client Requirements"},
+    {"type": "internal", "path": "odoo_module_catalog"},
+    {"type": "internal", "path": "implementation_best_practices"},
+    {"type": "web", "source": "odoo_documentation"}
+  ],
+  "memory_sources": [
+    {"type": "conversation", "retention": 90},
+    {"type": "client_context", "retention": 365},
+    {"type": "configuration_history", "retention": 730}
+  ],
+  "tools": [
+    "search_odoo_modules", "check_module_compatibility",
+    "generate_configuration_guide", "validate_workflow",
+    "estimate_effort", "generate_implementation_plan"
+  ],
+  "workflows": [
+    {
+      "name": "discovery",
+      "steps": [
+        {"name": "gather_requirements", "type": "llm", "system_prompt": "Extract client requirements from conversation."},
+        {"name": "analyze_needs", "type": "llm", "system_prompt": "Map client requirements to Odoo modules."},
+        {"name": "generate_proposal", "type": "llm", "system_prompt": "Create implementation proposal with module list, effort estimate, and timeline."}
+      ]
+    },
+    {
+      "name": "configuration",
+      "steps": [
+        {"name": "assess_current", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "ir.module.module"}},
+        {"name": "plan_config", "type": "llm", "system_prompt": "Plan configuration steps based on client requirements."},
+        {"name": "generate_guide", "type": "tool", "tool": "generate_configuration_guide"}
+      ]
+    },
+    {
+      "name": "troubleshoot",
+      "steps": [
+        {"name": "analyze_error", "type": "llm", "system_prompt": "Analyze the Odoo error description."},
+        {"name": "search_knowledge", "type": "knowledge", "query": "{error_description}"},
+        {"name": "recommend_solution", "type": "llm", "system_prompt": "Provide step-by-step solution based on error analysis and knowledge base."}
+      ]
+    }
+  ],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "workflow": {"type": "string", "enum": ["discovery", "configuration", "troubleshoot"]},
+      "client_context": {"type": "object"},
+      "requirements": {"type": "string"},
+      "error_description": {"type": "string"}
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "recommendation": {"type": "string"},
+      "modules": {"type": "array", "items": {"type": "string"}},
+      "configuration_steps": {"type": "array", "items": {"type": "object"}},
+      "effort_estimate": {"type": "object"}
+    }
+  },
+  "escalation_rules": [
+    {"condition": "custom_module_required", "escalate_to": "Solution_Architect", "error_types": ["ModuleNotFoundError"]},
+    {"condition": "data_migration_complex", "escalate_to": "Technical_Lead", "timeout_minutes": 120},
+    {"condition": "performance_issue", "escalate_to": "DevOps_Team", "timeout_minutes": 60}
+  ]
+}

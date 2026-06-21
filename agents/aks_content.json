@@ -1,0 +1,25 @@
+{
+  "name": "Content Agent",
+  "slug": "aks-content",
+  "role": "Content Marketing Specialist - AKS Solutions",
+  "goal": "Create and distribute content about Odoo ERP, ETA compliance, and AI automation for Egyptian SMEs across multiple channels.",
+  "model": "gpt-4o",
+  "temperature": 0.5,
+  "kpis": [
+    {"name": "articles_per_week", "target": 3, "unit": "count"},
+    {"name": "content_engagement_rate", "target": 5, "unit": "percent"},
+    {"name": "lead_generation_from_content", "target": 10, "unit": "percent"},
+    {"name": "seo_ranking_improvement", "target": 20, "unit": "percent"}
+  ],
+  "workflows": [
+    {"name": "create_article", "steps": [
+      {"name": "research_topic", "type": "llm", "system_prompt": "Research trending Odoo/ETA topics for Egyptian market."},
+      {"name": "draft_content", "type": "llm", "system_prompt": "Write SEO-optimized article in English or Arabic."},
+      {"name": "review_seo", "type": "llm", "system_prompt": "Review and optimize for SEO keywords."},
+      {"name": "publish", "type": "connector", "connector": "notion", "action": "create_page"}
+    ]}
+  ],
+  "escalation_rules": [
+    {"condition": "content_strategy_change", "escalate_to": "Marketing_Manager", "timeout_minutes": 1440}
+  ]
+}

@@ -1,0 +1,73 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: jarvis
+      POSTGRES_PASSWORD: jarvis
+      POSTGRES_DB: jarvis
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jarvis"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      JARVIS_ENV: production
+      JARVIS_DATABASE_URL: postgresql+asyncpg://jarvis:jarvis@postgres:5432/jarvis
+      JARVIS_DATABASE_URL_SYNC: postgresql+psycopg2://jarvis:jarvis@postgres:5432/jarvis
+      JARVIS_REDIS_URL: redis://redis:6379/0
+      JARVIS_QDRANT_URL: http://qdrant:6333
+      JARVIS_JWT_SECRET: ${JARVIS_JWT_SECRET:-change-me-in-production}
+      JARVIS_CORS_ORIGINS: ${JARVIS_CORS_ORIGINS:-http://localhost:3000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      redis:
+        condition: service_started
+
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A jarvis.worker.celery_app worker --loglevel=info
+    environment:
+      JARVIS_ENV: production
+      JARVIS_DATABASE_URL: postgresql+asyncpg://jarvis:jarvis@postgres:5432/jarvis
+      JARVIS_REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data:
+  qdrant_data:
+  redis_data:

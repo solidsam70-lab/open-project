@@ -1,0 +1,76 @@
+{
+  "name": "Property Matching Agent",
+  "slug": "property-matching",
+  "role": "Real Estate Property Matching Specialist",
+  "goal": "Match real estate properties with buyer/tenant requirements using multi-criteria scoring and market analysis for AKS real estate clients.",
+  "model": "gpt-4o",
+  "temperature": 0.2,
+  "kpis": [
+    {"name": "match_accuracy", "target": 90, "unit": "percent"},
+    {"name": "response_time", "target": 30, "unit": "seconds"},
+    {"name": "client_satisfaction", "target": 4.5, "unit": "score"},
+    {"name": "viewing_conversion_rate", "target": 40, "unit": "percent"}
+  ],
+  "knowledge_sources": [
+    {"type": "notion", "database": "Property Listings"},
+    {"type": "notion", "database": "Market Analysis"},
+    {"type": "internal", "path": "pricing_model"},
+    {"type": "internal", "path": "location_database"},
+    {"type": "web", "source": "real_estate_market_data"}
+  ],
+  "memory_sources": [
+    {"type": "client_preferences", "retention": 365},
+    {"type": "search_history", "retention": 90},
+    {"type": "viewing_feedback", "retention": 180}
+  ],
+  "tools": [
+    "search_properties", "score_match",
+    "compare_properties", "generate_comparison_report",
+    "estimate_market_value", "check_availability"
+  ],
+  "workflows": [
+    {
+      "name": "match_properties",
+      "steps": [
+        {"name": "parse_requirements", "type": "llm", "system_prompt": "Extract buyer/tenant requirements: location, budget, size, type, amenities."},
+        {"name": "search_listings", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "real.estate.property"}},
+        {"name": "score_matches", "type": "tool", "tool": "score_match"},
+        {"name": "rank_results", "type": "llm", "system_prompt": "Rank properties by match score and provide rationale."}
+      ]
+    },
+    {
+      "name": "market_analysis",
+      "steps": [
+        {"name": "gather_data", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "real.estate.property"}},
+        {"name": "analyze_trends", "type": "llm", "system_prompt": "Analyze market trends for the given area."},
+        {"name": "generate_report", "type": "llm", "system_prompt": "Generate comprehensive market analysis report."}
+      ]
+    }
+  ],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "workflow": {"type": "string", "enum": ["match_properties", "market_analysis"]},
+      "client_id": {"type": "string"},
+      "property_type": {"type": "string"},
+      "location": {"type": "string"},
+      "min_budget": {"type": "number"},
+      "max_budget": {"type": "number"},
+      "requirements": {"type": "object"}
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "matches": {"type": "array", "items": {"type": "object"}},
+      "top_match": {"type": "object"},
+      "market_insights": {"type": "string"},
+      "recommendations": {"type": "array", "items": {"type": "string"}}
+    }
+  },
+  "escalation_rules": [
+    {"condition": "no_matches_found", "escalate_to": "Real_Estate_Manager", "timeout_minutes": 60},
+    {"condition": "exclusive_listing", "escalate_to": "Senior_Broker", "timeout_minutes": 30},
+    {"condition": "price_dispute", "escalate_to": "Valuation_Team", "timeout_minutes": 120}
+  ]
+}

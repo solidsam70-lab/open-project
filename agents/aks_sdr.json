@@ -1,0 +1,40 @@
+{
+  "name": "SDR Agent",
+  "slug": "aks-sdr",
+  "role": "Sales Development Representative - AKS Solutions",
+  "goal": "Generate and qualify outbound leads for Odoo implementation, ETA compliance, and AI automation services. Book discovery calls for the sales team.",
+  "model": "gpt-4o",
+  "temperature": 0.4,
+  "kpis": [
+    {"name": "outbound_activities_per_day", "target": 50, "unit": "count"},
+    {"name": "meetings_booked_per_week", "target": 8, "unit": "count"},
+    {"name": "lead_response_rate", "target": 15, "unit": "percent"},
+    {"name": "qualified_leads_per_month", "target": 40, "unit": "count"}
+  ],
+  "knowledge_sources": [
+    {"type": "notion", "database": "ICP Definitions"},
+    {"type": "notion", "database": "Outbound Sequences"},
+    {"type": "internal", "path": "competitor_intel"},
+    {"type": "internal", "path": "success_stories"}
+  ],
+  "tools": ["search_linkedin", "find_company_contacts", "send_email", "send_linkedin_message", "log_activity_odoo"],
+  "workflows": [
+    {"name": "outbound_prospecting", "steps": [
+      {"name": "find_prospects", "type": "tool", "tool": "search_linkedin"},
+      {"name": "enrich_contacts", "type": "tool", "tool": "find_company_contacts"},
+      {"name": "craft_outreach", "type": "llm", "system_prompt": "Write personalized outreach message referencing industry and pain points."},
+      {"name": "send_message", "type": "connector", "connector": "gmail", "action": "send_email"},
+      {"name": "log_odoo", "type": "connector", "connector": "odoo", "action": "create", "params": {"model": "crm.lead"}}
+    ]},
+    {"name": "follow_up", "steps": [
+      {"name": "check_status", "type": "connector", "connector": "odoo", "action": "search_read", "params": {"model": "crm.lead"}},
+      {"name": "draft_followup", "type": "llm", "system_prompt": "Draft follow-up email based on lead status and previous interaction."},
+      {"name": "send_followup", "type": "connector", "connector": "gmail", "action": "send_email"}
+    ]}
+  ],
+  "escalation_rules": [
+    {"condition": "meeting_requested", "escalate_to": "Sales_Manager", "timeout_minutes": 15},
+    {"condition": "budget_confirmed", "escalate_to": "Proposal_Agent", "timeout_minutes": 30},
+    {"condition": "competitor_mentioned", "escalate_to": "Solution_Architect", "timeout_minutes": 60}
+  ]
+}
